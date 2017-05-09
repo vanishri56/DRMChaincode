@@ -1,0 +1,49 @@
+package main
+
+  import(
+    "encoding/json"
+    "errors"
+    "fmt"
+    "strconv"
+  
+    "github.com/hyperledger/fabric/core/chaincode.shim"
+    "github.com/hyperledger/fabric/core/crypto/primitives""
+    )
+    
+    // DRMCopyright is a high level smart contract for usage of business partners to manage the digital copyrights
+    
+type DRMCopyright struct {
+
+
+}
+
+// UserDetails is for storing User Details
+
+
+type ConsumerDetails struct{	
+	DRMId string `json:"drmId"`
+  Typeofownership string `json:"typeofownership"`   //ownership could be Purchase or Lease
+  Periodoflease string `json:"periodoflease" //period of lease - as in number of days
+  FirstName string `json:"firstName"`
+	LastName string `json:"lastName"`
+	Dob string `json:"dob"`
+	Email string `json:"email"`
+	Country string `json:"country"`
+	Address string `json:"address"`
+	City string `json:"city"`
+	Zip string `json:"zip"`
+	CreatedBy string `json:"createdBy"`
+  ConsumerBankName string `json:"consumerbankname"
+	}
+
+  type ProducerDetails struct {
+    DRMId string `json:"drmId"`  
+    ProductType string `json:"producttype"
+    ProductName string `json:"productname"` 
+    RegistrationId string  `json:"registrationid"
+    RegistrationWithDRM string `json:"registrationwithdrm"
+    }
+
+  
+  
+  
