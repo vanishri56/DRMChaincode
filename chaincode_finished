@@ -1,3 +1,5 @@
+//developed initially by Vanishri Murali for insidetrack17 code fest May 2017
+
 package main
 
   import(
@@ -10,40 +12,271 @@ package main
     "github.com/hyperledger/fabric/core/crypto/primitives""
     )
     
-    // DRMCopyright is a high level smart contract for usage of business partners to manage the digital copyrights
+    // DRM_Chain is a high level smart contract for usage of business partners to manage the digital copyrights
     
-type DRMCopyright struct {
+type DRM_Chaincode struct {
 
 
 }
 
-// UserDetails is for storing User Details
+// ConsumerDetails is for storing User Details
 
-
-type ConsumerDetails struct{	
-	DRMId string `json:"drmId"`
-  Typeofownership string `json:"typeofownership"`   //ownership could be Purchase or Lease
-  Periodoflease string `json:"periodoflease" //period of lease - as in number of days
-  FirstName string `json:"firstName"`
+type DRM_ConsumerDetails struct{	
+	ConsumerId string `json:"consumerid"
+	FirstName string `json:"firstName"`
 	LastName string `json:"lastName"`
 	Dob string `json:"dob"`
+	RetailerSubscriptionid `jspon:"retailersubscriptionid"
+	DRMId string `json:"drmId"`
+  	Typeofownership string `json:"typeofownership"`   //ownership could be Purchase or Lease
+  	Periodoflease string `json:"periodoflease" //period of lease - as in number of days
+  	PaymentId string `json:"paymentid"
+	}
+
+type AddressDetails struct{
+	AddressId string 'json:"addressid" 
 	Email string `json:"email"`
-	Country string `json:"country"`
 	Address string `json:"address"`
 	City string `json:"city"`
 	Zip string `json:"zip"`
-	CreatedBy string `json:"createdBy"`
-  ConsumerBankName string `json:"consumerbankname"
+	Country string `json:"country"`
 	}
-
-  type ProducerDetails struct {
-    DRMId string `json:"drmId"`  
+	
+  type DRM_ProducerDetails struct {
+    ProducerId string `json:"producerid"
+    ProducerName string `json:"producername"
     ProductType string `json:"producttype"
     ProductName string `json:"productname"` 
     RegistrationId string  `json:"registrationid"
-    RegistrationWithDRM string `json:"registrationwithdrm"
+    ProductId string `json:"productid"`  
+    DRMAuthorityName string `json:"drmauthorityname"
     }
 
+  type DRM_RetailerDetails struct {
+    ProducerId string `json:"producerid"
+    ProductId string `json:"productid"`  
+    ProductType string `json:"producttype"
+    ProductName string `json:"productname"` 
+    RetailerSubscriptionid `jspon:"retailersubscriptionid"
+    }
   
   
+  type Transaction struct{	
+	TransactionId string `json:"transactionId"`
+	TimeStamp string `json:"timeStamp"`
+	DRMId string `json:"drmId"`
+	ConsumerId string `json:"consumerid"`
+	Transactiontype string `json:"transactiontype"`
+  	ProducerId string `json:"producerid"
+	ProductId string `json:"productid"`
+	RetailerSubscriptionid `jspon:"retailersubscriptionid"
+}
+
   
+// Init initializes the smart contracts
+func (t *DRMchaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+
+
+	// Check if table already exists
+	_, err := stub.GetTable("DRM_ConsumerDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+
+
+	// Create application Table
+	err = stub.CreateTable("DRM_ConsumerDetails", []*shim.ColumnDefinition{
+		
+		&shim.ColumnDefinition{Name: "ConsumerId", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "FirstName", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "LastName", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "dob", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "RetailerSubscription", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "DRMId", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "TypeofOwnership", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "PeriodofLease", Type :shim.ColumnDefinition_STRING, Key: true},
+  		&shim.ColumnDefinition{Name: "PaymentId", Type :shim.ColumnDefinition_STRING, Key: true},
+  		})
+	if err != nil {
+		return nil, errors.New("Failed creating ApplicationTable.")
+		}
+      
+      
+      // Check if table already exists
+	_, err = stub.GetTable("AddressDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	
+	type AddressDetails struct{
+	AddressId string 'json:"addressid" 
+	Email string `json:"email"`
+	Address1 string `json:"address1"`
+	Address2 string `json:"address2"`
+	City string `json:"city"`
+	Zip string `json:"zip"`
+	Country string `json:"country"`
+	}
+
+
+		// Create application Table
+	err = stub.CreateTable("AddressDetails", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "AddressId", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "Email", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "Address1", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "Address2", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "city", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "state", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "zip", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "country", Type: shim.ColumnDefinition_STRING, Key: false},
+	})
+	if err != nil {
+		return nil, errors.New("Failed creating ApplicationTable.")
+	}
+
+
+      // Check if table already exists
+	_, err = stub.GetTable("DRM_ProducerDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	
+		// Create application Table
+	err = stub.CreateTable("DRM_ProducerDetails", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "ProducerId", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "ProducerName", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "ProductType", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "Address2", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "ProductName", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "RegistrationId", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "ProductId", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "DRMAuthorityName", Type: shim.ColumnDefinition_STRING, Key: false},
+	})
+	if err != nil {
+		return nil, errors.New("Failed creating ApplicationTable.")
+	}
+
+
+      // Check if table already exists
+	_, err = stub.GetTable("DRM_RetailerDetails")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	
+		// Create application Table
+	err = stub.CreateTable("DRM_RetailerDetails", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "ProducerId", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "ProductId", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "ProductType", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "ProductName", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "RetailerSubscription", Type :shim.ColumnDefinition_STRING, Key: true},
+		
+	})
+	if err != nil {
+		return nil, errors.New("Failed creating ApplicationTable.")
+	}
+
+Transactiontype string `json:"transactiontype"`
+      // Check if table already exists
+	_, err = stub.GetTable("Transaction")
+	if err == nil {
+		// Table already exists; do not recreate
+		return nil, nil
+	}
+	
+		// Create application Table
+	err = stub.CreateTable("Transaction", []*shim.ColumnDefinition{
+		&shim.ColumnDefinition{Name: "TransactionId", Type: shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "TimeStamp", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "DRMId", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "consumerid", Type: shim.ColumnDefinition_STRING, Key: false},
+		&shim.ColumnDefinition{Name: "RetailerSubscription", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "ProducerId", Type :shim.ColumnDefinition_STRING, Key: true},
+		&shim.ColumnDefinition{Name: "retailersubscriptionid", Type :shim.ColumnDefinition_STRING, Key: true},
+		
+		
+	})
+	if err != nil {
+		return nil, errors.New("Failed creating ApplicationTable.")
+	}
+	// setting up the users role
+	stub.PutState("user_type1_1", []byte("Producer"))
+	stub.PutState("user_type1_2", []byte("Retailer"))
+	stub.PutState("user_type1_3", []byte("DRMAuthority"))
+	stub.PutState("user_type1_4", []byte("Consumer"))	
+	
+	return nil, nil
+}
+
+//registerUser to register a user
+func (t *DRMChaincode) registerUser(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+
+
+if len(args) != 12 {
+			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 12. Got: %d.", len(args))
+		}
+		
+	ConsumerId:args[1]
+	FirstName:args[2[]
+	LastName:args[3]
+	Dob:args[4]
+	RetailerSubscriptionid:args[4]
+	DRMId:args[5]
+  	Typeofownership:args[6]
+  	Periodoflease:args[7]
+  	PaymentId:[8]
+	}
+	
+		assignerOrg1, err := stub.GetState(args[9])
+		assignerOrg := string(assignerOrg1)
+		
+		createdBy:=assignerOrg
+		totalPoint:="0"
+
+		// Insert a row
+		ok, err := stub.InsertRow("UserDetails", shim.Row{
+			Columns: []*shim.Column{
+				&shim.Column{Value: &shim.Column_String_{String_: ConsumerId}},
+				&shim.Column{Value: &shim.Column_String_{String_: FirstName}},
+				&shim.Column{Value: &shim.Column_String_{String_: LastName}},
+				&shim.Column{Value: &shim.Column_String_{String_: dob}},
+				&shim.Column{Value: &shim.Column_String_{String_: RetailerSubscription}},
+				&shim.Column{Value: &shim.Column_String_{String_: DRMid}},
+				&shim.Column{Value: &shim.Column_String_{String_: TypeofOwnership}},
+				&shim.Column{Value: &shim.Column_String_{String_: Periodoflease}},
+				&shim.Column{Value: &shim.Column_String_{String_: PaymentId}},
+				
+			}})
+
+
+		if err != nil {
+			return nil, err 
+		}
+		if !ok && err == nil {
+			return nil, errors.New("Row already exists.")
+		}
+			
+		return nil, nil
+
+
+}
+	// Get the row pertaining to this DRMid
+	var columns []shim.Column
+	col1 := shim.Column{Value: &shim.Column_String_{String_: ffId}}
+	columns = append(columns, col1)
+
+
+	row, err := stub.GetRow("UserDetails", columns)
+	if err != nil {
+		return nil, fmt.Errorf("Error: Failed retrieving user with ffid %s. Error %s", ffId, err.Error())
+	}
+
+
+	// GetRows returns empty message if key does not exist
+	if len(row.Columns) == 0 {
+		return nil, nil
+	}
