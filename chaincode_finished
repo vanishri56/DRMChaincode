@@ -110,18 +110,7 @@ func (t *DRMchaincode) Init(stub shim.ChaincodeStubInterface, function string, a
 		return nil, nil
 	}
 	
-	type AddressDetails struct{
-	AddressId string 'json:"addressid" 
-	Email string `json:"email"`
-	Address1 string `json:"address1"`
-	Address2 string `json:"address2"`
-	City string `json:"city"`
-	Zip string `json:"zip"`
-	Country string `json:"country"`
-	}
-
-
-		// Create application Table
+			// Create application Table
 	err = stub.CreateTable("AddressDetails", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "AddressId", Type: shim.ColumnDefinition_STRING, Key: true},
 		&shim.ColumnDefinition{Name: "Email", Type: shim.ColumnDefinition_STRING, Key: false},
@@ -212,43 +201,40 @@ Transactiontype string `json:"transactiontype"`
 	return nil, nil
 }
 
-//registerUser to register a user
-func (t *DRMChaincode) registerUser(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
+//registerUser to Producer registers producet with the DRM
+func (t *DRMChaincode) register(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
 
 
-if len(args) != 12 {
-			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 12. Got: %d.", len(args))
+if len(args) != 9 {
+			return nil, fmt.Errorf("Incorrect number of arguments. Expecting 9. Got: %d.", len(args))
 		}
 		
-	ConsumerId:args[1]
-	FirstName:args[2[]
-	LastName:args[3]
-	Dob:args[4]
+	ProducerId:args[1]
+	ProducerName:args[2[]
+	ProductType:args[3]
+	ProductName:args[4]
 	RetailerSubscriptionid:args[4]
-	DRMId:args[5]
-  	Typeofownership:args[6]
-  	Periodoflease:args[7]
-  	PaymentId:[8]
-	}
-	
-		assignerOrg1, err := stub.GetState(args[9])
+	RegistrationId:args[5]
+  	ProductId:args[6]
+  	DRMAuthorityName:args[7]
+  
+		assignerOrg1, err := stub.GetState(args[8])
 		assignerOrg := string(assignerOrg1)
 		
 		createdBy:=assignerOrg
 		totalPoint:="0"
 
 		// Insert a row
-		ok, err := stub.InsertRow("UserDetails", shim.Row{
+		ok, err := stub.InsertRow("DRM_ProducerDetails", shim.Row{
 			Columns: []*shim.Column{
-				&shim.Column{Value: &shim.Column_String_{String_: ConsumerId}},
-				&shim.Column{Value: &shim.Column_String_{String_: FirstName}},
-				&shim.Column{Value: &shim.Column_String_{String_: LastName}},
-				&shim.Column{Value: &shim.Column_String_{String_: dob}},
-				&shim.Column{Value: &shim.Column_String_{String_: RetailerSubscription}},
-				&shim.Column{Value: &shim.Column_String_{String_: DRMid}},
-				&shim.Column{Value: &shim.Column_String_{String_: TypeofOwnership}},
-				&shim.Column{Value: &shim.Column_String_{String_: Periodoflease}},
-				&shim.Column{Value: &shim.Column_String_{String_: PaymentId}},
+				&shim.Column{Value: &shim.Column_String_{String_: ProducerId}},
+				&shim.Column{Value: &shim.Column_String_{String_: ProducerName}},
+				&shim.Column{Value: &shim.Column_String_{String_: ProductType}},
+				&shim.Column{Value: &shim.Column_String_{String_: RetailerSubscriptionid}},
+				&shim.Column{Value: &shim.Column_String_{String_: RegistrationId}},
+				&shim.Column{Value: &shim.Column_String_{String_: ProductId}},
+				&shim.Column{Value: &shim.Column_String_{String_: DRMAuthorityName}},
+				
 				
 			}})
 
@@ -264,19 +250,34 @@ if len(args) != 12 {
 
 
 }
-	// Get the row pertaining to this DRMid
+	// Get the row pertaining to this DRM_ProducerDetails
 	var columns []shim.Column
-	col1 := shim.Column{Value: &shim.Column_String_{String_: ffId}}
+	col1 := shim.Column{Value: &shim.Column_String_{String_: DRM_ProducerDetails }}
 	columns = append(columns, col1)
 
 
-	row, err := stub.GetRow("UserDetails", columns)
+	row, err := stub.GetRow("DRM_ProducerDetails", columns)
 	if err != nil {
-		return nil, fmt.Errorf("Error: Failed retrieving user with ffid %s. Error %s", ffId, err.Error())
+		return nil, fmt.Errorf("Error: Failed retrieving product with productid %s. Error %s", DRM_ProducerDetails, err.Error())
 	}
 
 
 	// GetRows returns empty message if key does not exist
 	if len(row.Columns) == 0 {
 		return nil, nil
+	}
+// Invoke invokes the chaincode
+func (t *DRMChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
+
+
+	if function == "register" {
+		t := DRMChaincode{}
+		return t.register(stub, args)	
+	} 
+	}
+
+
+	return nil, errors.New("Invalid invoke function name.")
+
+
 	}
